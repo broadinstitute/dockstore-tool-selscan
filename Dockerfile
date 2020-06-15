@@ -1,5 +1,5 @@
 #############################################################
-# Dockerfile to build a sample tool container for BAMStats
+# Dockerfile to build a sample tool container for SelScan
 #############################################################
 
 # Set the base image to Ubuntu
@@ -10,7 +10,7 @@ MAINTAINER Ilya Shlyakhter <ilya_shl@alum.mit.edu>
 
 # Setup packages
 USER root
-RUN apt-get -m update && apt-get install -y wget unzip curl zip build-essential python3
+RUN apt-get -m update && apt-get install -y wget # unzip curl zip build-essential python3
 
 # get the tool and install it in /usr/local/bin
 # RUN wget -q http://downloads.sourceforge.net/project/bamstats/BAMStats-1.25.zip
@@ -20,13 +20,10 @@ RUN apt-get -m update && apt-get install -y wget unzip curl zip build-essential 
 # COPY bin/bamstats /usr/local/bin/
 # RUN chmod a+x /usr/local/bin/bamstats
 
-RUN wget -q https://github.com/broadinstitute/cosi2/archive/v2.3.2rc4.zip
-RUN unzip v2.3.2rc4.zip && rm v2.3.2rc4.zip && cd cosi2-2.3.2rc4 && ./configure && make install
-RUN cd cosi2-2.3.2rc4 && VERBOSE=1 make check && cd .. && rm -rf cosi2-2.3.2rc4
-RUN strip /usr/local/bin/coalescent && rm /usr/local/bin/sample_stats_extra \
-    && rm /usr/local/bin/get_recomap && rm /usr/local/bin/recomap_hapmap2 && rm /usr/local/bin/recosimulate \
-    && rm /usr/local/lib/libcosi*
-RUN apt-get remove -y wget unzip zip curl build-essential python3 && apt-get autoremove -y
+RUN wget -q https://github.com/szpiech/selscan/releases/download/1.2.0a/linux.tar.gz
+RUN tar xvfz linux.tar.gz && rm linux.tar.gz && cp linux/selscan linux/norm /usr/local/bin/ && \
+    chmod a+rx /usr/local/bin/selscan /usr/local/bin/norm && rm -rf linux
+RUN apt-get remove -y wget && apt-get autoremove -y #unzip zip curl build-essential python3 
 
 # RUN curl -S https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh > miniconda.sh && \
 #     chmod u+x miniconda.sh && \
@@ -42,8 +39,7 @@ USER ubuntu
 
 VOLUME ["/user-data"]
 ENV \
-    COSI2_DOCKER_DATA_PATH="/user-data" \
-    COSI_NEWSIM=1
+    SELSCAN_DATA_PATH="/user-data"
 
 # by default /bin/bash is executed
 CMD ["/bin/bash"]
